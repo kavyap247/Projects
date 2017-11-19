@@ -45,9 +45,8 @@ private JPanel userProcessContainer;
     }
     
     public void populateRequestTable(){
+       
         DefaultTableModel model = (DefaultTableModel) clinicWorkAreaJTable.getModel();
-        
-   
         model.setRowCount(0);
         for (WorkRequest request : userAccount.getWorkQueue().getWorkRequestList()){
             Object[] row = new Object[4];

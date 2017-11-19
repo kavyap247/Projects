@@ -6,11 +6,14 @@ package userinterface.DoctorRole;
 
 import Business.EcoSystem;
 import Business.Enterprise.Enterprise;
+import Business.Enterprise.EnterpriseDirectory;
 import Business.Organization.InventoryOrganization;
 import Business.UserAccount.UserAccount;
+import Business.UserAccount.UserAccountDirectory;
 import Business.WorkQueue.LabTestWorkRequest;
 import Business.WorkQueue.WorkRequest;
 import java.awt.CardLayout;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import userinterface.DoctorRole.SupplierWorkArea;
 import javax.swing.table.DefaultTableModel;
@@ -26,16 +29,18 @@ public class DoctorWorkAreaJPanel extends javax.swing.JPanel {
     private InventoryOrganization organization;
     private Enterprise enterprise;
     private UserAccount userAccount;
+    private EcoSystem system;
     /**
      * Creates new form DoctorWorkAreaJPanel
      */
-    public DoctorWorkAreaJPanel(JPanel userProcessContainer, UserAccount account, InventoryOrganization organization, Enterprise enterprise) {
+    public DoctorWorkAreaJPanel(JPanel userProcessContainer, UserAccount account, InventoryOrganization organization, Enterprise enterprise,EcoSystem system) {
         initComponents();
         
         this.userProcessContainer = userProcessContainer;
         this.organization = organization;
         this.enterprise = enterprise;
         this.userAccount = account;
+        this.system = system;
         valueLabel.setText(enterprise.getName());
         populateRequestTable();
     }
@@ -46,16 +51,17 @@ public class DoctorWorkAreaJPanel extends javax.swing.JPanel {
         model.setRowCount(0);
         
         for (WorkRequest request : userAccount.getWorkQueue().getWorkRequestList()){
-           if(request.getEnterpriseType().equals(enterprise.getEnterpriseType())){
-            Object[] row = new Object[4];
-            row[0] = request.getMessage();
+            if(request.getEnterpriseType().equals(Enterprise.EnterpriseType.Clinic)){
+            Object[] row = new Object[5];
+            row[0] = request;
             row[1] = request.getReceiver();
             row[2] = request.getStatus();
             String result = ((LabTestWorkRequest) request).getTestResult();
             row[3] = result == null ? "Waiting" : result;
+            row[4] = "a";
             
             model.addRow(row);
-           }
+            }
         }
         
         
@@ -239,11 +245,27 @@ public class DoctorWorkAreaJPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void requestTestJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_requestTestJButtonActionPerformed
+        int selectedRow = workRequestJTable.getSelectedRow();
         
-        CardLayout layout = (CardLayout) userProcessContainer.getLayout();
+        if (selectedRow < 0){
+            JOptionPane.showMessageDialog(null,"Please select a row");
+        }
+        LabTestWorkRequest request = (LabTestWorkRequest)workApproveJTable1.getValueAt(selectedRow, 0);
+        JOptionPane.showMessageDialog(null,"request sent to supplier");
+        request.setStatus("Sent to Supplier");
+        populateRequestTable();
         
-        
-        layout.next(userProcessContainer);
+        EnterpriseDirectory dir = system.getNetworkList().get(0).getEnterpriseDirectory();
+         Enterprise supplierEnterprise = null;
+         for(Enterprise e : dir.getEnterpriseList()){
+             if(e.getEnterpriseType().equals(Enterprise.EnterpriseType.Supplier)){
+                 UserAccountDirectory uadir = e.getOrganizationDirectory().getOrganizationList().get(0).getUserAccountDirectory();
+                 for(UserAccount userAccount : uadir.getUserAccountList()){
+                     userAccount.getWorkQueue().getWorkRequestList().add(request);
+                 }
+             }
+         }
+       
         
     }//GEN-LAST:event_requestTestJButtonActionPerformed
 
@@ -257,7 +279,7 @@ public class DoctorWorkAreaJPanel extends javax.swing.JPanel {
        int selectedRow = workApproveJTable1.getSelectedRow();
         
         if (selectedRow < 0){
-            return;
+            JOptionPane.showMessageDialog(null,"Please select a row");
         }
         
         LabTestWorkRequest request = (LabTestWorkRequest)workApproveJTable1.getValueAt(selectedRow, 0);

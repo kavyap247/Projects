@@ -11,6 +11,8 @@ import Business.Organization.InventoryOrganization;
 import Business.UserAccount.UserAccount;
 import Business.Vaccine.Vaccine;
 import Business.Vaccine.VaccineDirectory;
+import Business.WorkQueue.LabTestWorkRequest;
+import Business.WorkQueue.WorkRequest;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.table.DefaultTableModel;
@@ -40,6 +42,7 @@ public class SupplierWorkArea extends javax.swing.JPanel {
         this.userAccount = account;
         this.system = system;
         populateTable(); 
+        populateRequestsTable();
     }
 
     
@@ -55,6 +58,24 @@ public class SupplierWorkArea extends javax.swing.JPanel {
             
         }
         
+    }
+    
+    public void populateRequestsTable(){
+        DefaultTableModel model1 = (DefaultTableModel) supplierApproveJTable1.getModel();
+        model1.setRowCount(0);
+        for(WorkRequest request : userAccount.getWorkQueue().getWorkRequestList()){
+          
+              Object row[] = new Object[5];
+              row[0] = request;
+              row[1] = request.getReceiver();
+            row[2] = request.getStatus();
+            row[3] = "Pending your approval";
+            row[4] = request.getSender();
+            
+            model1.addRow(row);
+                      
+                      
+    }
     }
 
     /**
@@ -182,19 +203,33 @@ public class SupplierWorkArea extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void approveTestsupplierJButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_approveTestsupplierJButton1ActionPerformed
-//        int selectedRow = supplierApproveJTable1.getSelectedRow();
-//
-//        if (selectedRow < 0){
-//            return;
-//        }
-//
-//        LabTestWorkRequest request = (LabTestWorkRequest)supplierApproveJTable1.getValueAt(selectedRow, 0);
-//
-//        request.setStatus("Completed");
-//        request.setTestResult("Completed");
-//        DefaultTableModel model1 = (DefaultTableModel) supplierApproveJTable1.getModel();
-//        model1.setRowCount(0);
-//        populateRequestTable();
+      
+        int selectedRow = supplierApproveJTable1.getSelectedRow();
+
+       if (selectedRow < 0){
+          JOptionPane.showMessageDialog(null,"Please select row");
+       }
+
+        LabTestWorkRequest request = (LabTestWorkRequest)supplierApproveJTable1.getValueAt(selectedRow, 0);
+        DefaultTableModel model2 = (DefaultTableModel) supplierApproveJTable1.getModel();
+        model2.setRowCount(0);
+        
+        request.setStatus("Completed");
+        request.setTestResult("Approved");
+        for(WorkRequest r : userAccount.getWorkQueue().getWorkRequestList()){
+          
+              Object row[] = new Object[5];
+              row[0] = request;
+              row[1] = request.getReceiver();
+            row[2] = request.getStatus();
+            row[3] = request.getTestResult();
+            row[4] = request.getSender();
+            
+            model2.addRow(row);
+                      
+                      
+    }
+        
 
     }//GEN-LAST:event_approveTestsupplierJButton1ActionPerformed
 
